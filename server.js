@@ -5,38 +5,21 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
+const { Session, sessions } = require('./lib/session')
 const { Terminal } = require('./lib/terminal')
 
-const stdout = data => io.emit('stdout', data)
-
-const terminal = new Terminal(stdout)
-
-io.on('connection', (socket) => {
-  socket.on('stdin', data => {
-    terminal.write(data)
-  })
-})
-
 // Socket.io
+io.on('connection', async socket => {
+  const onDataHandler = data => socket.emit('stdout', data)
+  const terminal = new Terminal(onDataHandler)
+  new Session(socket, terminal)
+})
 
 // Terminal API
-app.get('/terminal', (req, res) => {
-  res.json({
-      output: terminal.output,
-      rows: terminal.rows(),
-      cols: terminal.cols(),
-      status: terminal.status
-    })
-})
-
-app.post('/terminal', (req, res) => {
-  try {
-    terminal.write(req.query.cmd + '\r')
-    res.end()
-  } catch (e) {
-    console.log(e)
-    res.json({error: JSON.stringify(e)})
-  }
+app.get('/sessions', (req, res) => {
+  res.json(Object.keys(sessions).map(id => {
+    return sessions[id].id
+  }))
 })
 
 // File Serving
@@ -45,6 +28,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/static', express.static('node_modules'));
+app.use('/public', express.static('public'));
 
 const port = 3000
 server.listen(port, () => {

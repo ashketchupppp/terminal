@@ -51,14 +51,27 @@ app.get('/terminals/:terminalNumber', (req, res) => {
 
 app.post('/terminals/:terminalNumber', (req, res) => {
   try {
-    terminals[req.params.terminalNumber].execute(req.query.cmd)
+    terminals[req.params.terminalNumber].write(req.query.cmd + '\r')
     res.end()
   } catch (e) {
     console.log(e)
     res.json({error: JSON.stringify(e)})
   }
 })
- 
+
+const publicRoot = process.cwd() + '/public'
+
+app.get('/', (req, res) => {
+  res.sendFile(publicRoot + '/index.html')
+})
+
+app.get('/node_modules/*', (req, res) => {
+  res.sendFile(process.cwd() + req.path)
+})
+
+app.get('/*', (req, res) => {
+  res.sendFile(publicRoot + req.path)
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

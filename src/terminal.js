@@ -28,8 +28,8 @@ class Terminal {
     this.registerEventHandlers()
   }
 
-  execute (command) {
-    this.terminal.write(command + '\r')
+  write (string) {
+    this.terminal.write(string)
   }
 
   kill () {

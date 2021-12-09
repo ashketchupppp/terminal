@@ -11,10 +11,12 @@ const stdout = data => io.emit('stdout', data)
 
 const terminal = new Terminal(stdout)
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   socket.on('stdin', data => {
     terminal.write(data)
   })
+
+  
 })
 
 // Socket.io

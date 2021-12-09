@@ -8,12 +8,14 @@
       <div id="terminal"></div>
       <script src="static/socket.io-client/dist/socket.io.js"></script>
       <script>
-        var term = new Terminal({ windowOptions: { maximizeWin: true } });
+        var term = new Terminal({});
         term.open(document.getElementById('terminal'));
         var socket = io();
         socket.on('stdout', data => {
           term.write(data)
         })
+
+        socket.onAny((event, ...args) => {  console.log(event, args);});
 
         const writeToStdin = string => {
           socket.emit('stdin', string)
@@ -22,6 +24,14 @@
         term.onKey(event => {
           writeToStdin(event.key)
         })
+
+        fetch('/terminal')
+          .then(res => {
+            res.json()
+            .then(termInfo => {
+              term.resize(termInfo.cols, termInfo.rows)
+            })
+          })
       </script>
     </body>
   </html>
